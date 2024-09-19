@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams,Link } from 'react-router-dom';
 import { getEventById } from '../api/event/event';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -104,12 +104,15 @@ const GeometricEvent = () => {
             </div>
             
             {/* Circular element */}
+            <Link to={`/event/organiser/update/${id}`}>
             <div className="transition-transform transform flex justify-center items-center w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto shadow-2xl hover:scale-110">
               <button className="text-blue-200 font-semibold py-2 px-4 md:py-3 md:px-8 rounded-full transition-colors">
-                  Book Now
+                  Update Event
               </button>
             </div>
+            </Link>
           </div>
+       
           
           {/* Right column */}
           <div className="space-y-4 md:space-y-8">
