@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useParams,Link } from 'react-router-dom';
-import { getEventById } from '../api/event/event';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { getEventById, deleteEventById } from '../api/event/event'; // Add delete event API
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
@@ -10,6 +10,8 @@ const GeometricEvent = () => {
   const { id } = useParams();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showConfirmModal, setShowConfirmModal] = useState(false); // Add state for confirmation modal
+  const navigate = useNavigate();
 
   useEffect(() => {
     getEventById(id)
@@ -26,6 +28,24 @@ const GeometricEvent = () => {
         }, 1000);
       });
   }, [id]);
+
+  const handleDelete = () => {
+    deleteEventById(id)
+      .then(() => {
+        navigate('/event'); // Redirect to the main event page after deletion
+      })
+      .catch(error => {
+        console.error('Error deleting event:', error);
+      });
+  };
+
+  const openConfirmModal = () => {
+    setShowConfirmModal(true);
+  };
+
+  const closeConfirmModal = () => {
+    setShowConfirmModal(false);
+  };
 
   if (loading) {
     return (
@@ -51,28 +71,28 @@ const GeometricEvent = () => {
       {
         data: [event.bookedSeats, remainingSeats],
         backgroundColor: [
-          'rgba(255, 99, 132, 0.8)', // More vibrant colors
+          'rgba(255, 99, 132, 0.8)', 
           'rgba(54, 162, 235, 0.8)',
         ],
         hoverBackgroundColor: [
           'rgba(255, 99, 132, 1)',
           'rgba(54, 162, 235, 1)',
         ],
-        borderColor: '#fff', // White border for a 3D effect
+        borderColor: '#fff',
         borderWidth: 2,
-        hoverOffset: 10, // Slightly pop-out on hover for 3D effect
+        hoverOffset: 10,
       },
     ],
   };
 
   const chartOptions = {
-    cutout: '70%', // Adjust the cutout for a doughnut effect
+    cutout: '70%',
     plugins: {
       legend: {
         display: true,
         position: 'bottom',
         labels: {
-          color: '#ffffff', // White legend text color
+          color: '#ffffff',
         },
       },
     },
@@ -88,35 +108,29 @@ const GeometricEvent = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
           {/* Left column */}
           <div className="space-y-4 md:space-y-8">
-            {/* Event title */}
             <div className="transition-transform transform p-4 md:p-6 rounded-e-full shadow-2xl hover:scale-95">
               <h1 className="text-white text-2xl md:text-3xl">{event.title}</h1>
             </div>
-            
-            {/* Event image */}
+
             <div className="bg-blue-700 rounded-lg overflow-hidden">
               <img src={event.image} alt={event.title} className="w-full h-auto max-h-64 md:max-h-96 object-cover" />
             </div>
 
-            {/* Pie Chart */}
             <div className="w-full max-w-xs mx-auto">
               <Doughnut data={chartData} options={chartOptions} />
             </div>
             
-            {/* Circular element */}
             <Link to={`/event/organiser/update/${id}`}>
-            <div className="transition-transform transform flex justify-center items-center w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto shadow-2xl hover:scale-110">
-              <button className="text-blue-200 font-semibold py-2 px-4 md:py-3 md:px-8 rounded-full transition-colors">
-                  Update Event
-              </button>
-            </div>
+              <div className="transition-transform transform flex justify-center items-center w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto shadow-2xl hover:scale-110">
+                <button className="text-blue-200 font-semibold py-2 px-4 md:py-3 md:px-8 rounded-full transition-colors">
+                    Update Event
+                </button>
+              </div>
             </Link>
           </div>
-       
-          
+
           {/* Right column */}
           <div className="space-y-4 md:space-y-8">
-            {/* Event information */}
             <div className="transition-transform transform p-4 md:p-6 rounded-3xl shadow-2xl hover:scale-95">
               <h2 className="text-lg md:text-xl font-semibold mb-2 md:mb-4">Event Information</h2>
               <ul className="space-y-1 md:space-y-2">
@@ -128,19 +142,16 @@ const GeometricEvent = () => {
               </ul>
             </div>
             
-            {/* Description */}
             <div className="transition-transform transform rounded-3xl shadow-2xl p-4 md:p-6 hover:scale-95">
               <h3 className="text-base md:text-lg font-semibold mb-2">Description</h3>
               <p className="text-sm md:text-base">{event.description}</p>
             </div>
-            
-            {/* Organizer information */}
+
             <div className="transition-transform transform rounded-3xl shadow-2xl p-4 md:p-6 hover:scale-95">
               <h3 className="text-base md:text-lg font-semibold mb-2">Organizer</h3>
               <p className="text-sm md:text-base">{event.organizer_email}</p>
             </div>
             
-            {/* Tags */}
             <div className="flex flex-wrap gap-2 ">
               {event.Tags && event.Tags.map((tag, index) => (
                 <span key={index} className="transition-transform transform shadow-md px-2 py-1 md:px-3 md:py-1 rounded-full text-xs md:text-sm hover:scale-95">
@@ -148,9 +159,29 @@ const GeometricEvent = () => {
                 </span>
               ))}
             </div>
+
+            {/* Delete Button */}
+            <div className="flex justify-center">
+              <button onClick={openConfirmModal} className="bg-gradient-to-r from-red-500 to-[#030202] transition-transform transform  text-white px-4 py-2 rounded-md hover:scale-90">
+                Delete Event
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-gradient-to-r from-[#353535] to-[#181717] text-white p-8 rounded-lg shadow-lg space-y-4">
+            <h2 className="text-lg font-semibold">Are you sure you want to delete this event?</h2>
+            <div className="flex justify-end space-x-4">
+              <button onClick={closeConfirmModal} className="bg-white text-black px-4 py-2 rounded-md hover:bg-gray-300">Cancel</button>
+              <button onClick={handleDelete} className="bg-white text-black px-4 py-2 rounded-md hover:bg-red-700">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

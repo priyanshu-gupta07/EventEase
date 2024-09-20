@@ -13,7 +13,7 @@ import {
 
 const SidebarLink = ({ href, icon: Icon, label, isCollapsed }) => {
   const location = useLocation();
-  const isActive = location.pathname === href || (location.pathname === '/' && href === '/dashboard');
+  const isActive = location.pathname === href || (location.pathname === '/' && href === '/event');
 
   return (
     <Link to={href}>

@@ -52,11 +52,11 @@ const Organiser = () => {
       </Link>
 
       {/* Events Grid */}
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-3 lg:grid-cols-6 mt-12">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-3 lg:grid-cols-6">
         {events.map(event => (
           <div 
             key={event.id} 
-            className="bg-gradient-to-r from-[#181717] to-blue-400 text-white shadow-lg rounded-lg p-4 flex flex-col transform hover:scale-105 transition-transform duration-300 ease-in-out hover:shadow-neon"
+            className="bg-gradient-to-br from-white to-black text-white shadow-lg rounded-lg p-4 flex flex-col transform hover:scale-105 transition-transform duration-300 ease-in-out hover:shadow-neon"
           >
             <div className="mb-4 w-full h-36 overflow-hidden rounded-lg">
               <img src={event.image} alt={event.title} className="w-full h-full object-cover" />

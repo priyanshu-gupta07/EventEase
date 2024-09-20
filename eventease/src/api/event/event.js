@@ -21,3 +21,10 @@ export const getEventById = async (id) => {
     url: `/api/events/${id}`, // Replace with your signup endpoint
   });
 };
+
+export const deleteEventById = async (id) => {
+  return baseQuery({
+    method: 'DELETE',
+    url: `/api/events/${id}`, // Replace with your signup endpoint
+  });
+};
