@@ -28,3 +28,11 @@ export const deleteEventById = async (id) => {
     url: `/api/events/${id}`, // Replace with your signup endpoint
   });
 };
+
+export const updateEventseats = async (id, seats) => {
+  return baseQuery({
+    method: 'PUT',
+    url: `/api/events/updateSeats/${id}`, // Replace with your signup endpoint
+    data: { id,seats },
+  });
+}

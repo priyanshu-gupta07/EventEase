@@ -1,11 +1,49 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getEventById } from '../api/event/event';
+import { getEventById,updateEventseats } from '../api/event/event';
+import io from 'socket.io-client';
+import { createbooking } from '../api/Bookings/booking';
+import AliceCarousel from 'react-alice-carousel';
+import 'react-alice-carousel/lib/alice-carousel.css';
+
+const socket = io('http://localhost:3001');
 
 const GeometricEvent = () => {
   const { id } = useParams();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showConfirmModal2, setShowConfirmModal2] = useState(false);
+  const [seats, setSeats] = useState(1);
+
+  const user=localStorage.getItem('user');
+  const Userobject = JSON.parse(user);
+
+  const handleDragStart = (e) => e.preventDefault();
+
+
+  const userTickets = [
+    { id: 1, eventName: 'Concert 1', date: '2024-09-30', seatNumber: 'A12' },
+    { id: 2, eventName: 'Concert 2', date: '2024-10-02', seatNumber: 'B15' },
+    { id: 3, eventName: 'Concert 3', date: '2024-10-15', seatNumber: 'C10' },
+    { id: 3, eventName: 'Concert 3', date: '2024-10-15', seatNumber: 'C10' },
+    { id: 3, eventName: 'Concert 3', date: '2024-10-15', seatNumber: 'C10' },
+    { id: 3, eventName: 'Concert 3', date: '2024-10-15', seatNumber: 'C10' },
+  ];
+
+  const items = userTickets.map((ticket, index) => (
+    <div
+      key={index}
+      className="bg-gray-800 p-6 rounded-lg shadow-md text-center min-h-[200px]"
+      onDragStart={handleDragStart}
+      role="presentation"
+    >
+      <p className="text-lg font-bold">Ticket #{ticket.id}</p>
+      <p className="text-sm mt-2">Event: {ticket.eventName}</p>
+      <p className="text-sm">Date: {ticket.date}</p>
+      <p className="text-sm">Seat: {ticket.seatNumber}</p>
+    </div>
+  ));
 
   useEffect(() => {
     getEventById(id)
@@ -22,6 +60,77 @@ const GeometricEvent = () => {
        }, 1000);
       });
   }, [id]);
+
+  useEffect(() => {
+    socket.on('seatsUpdated', (data) => {
+        if (data.id === event.id) {
+            setEvent((prevEvent) => ({
+                ...prevEvent,
+                bookedSeats: data.totalBookedSeats 
+            }));
+        }
+    });
+
+    return () => {
+        socket.off('seatsUpdated');
+    };
+}, [event]);
+
+  const Bookseats = async () => {
+    closeConfirmModal();
+    setLoading(true); 
+
+    try {
+        // Await the completion of updateEventSeats
+      const response=  await updateEventseats(id, seats);
+      console.log(response);
+      if(response.message==="Success")
+      {
+        console.log("here");
+        const bookingData = {
+            event_id:id,
+            booking_date:Date.now(),
+            booking_status: "Booked",
+            user_id: Userobject.email,
+            event_name:event.title,
+            username:Userobject.username,
+            event_date:event.date,
+            Amount_paid:event.price*seats,
+            seat_no:response.data,
+            count:seats
+        }
+        const bookingResponse = await createbooking(bookingData);
+        console.log(bookingResponse);
+    }
+    } catch (error) {
+        console.error('Error booking seats:', error);
+    } finally {
+        // Ensure loading is set to false once the operation is complete
+        setLoading(false);
+    }
+  };
+
+  const showtickets = async () => {
+    console.log("here");
+  }
+
+  const openConfirmModal = () => {
+    setShowConfirmModal(true);
+  };
+
+  const closeConfirmModal = () => {
+    setShowConfirmModal(false);
+  };
+
+  const openConfirmModal2 = () => {
+    setShowConfirmModal2(true);
+  };
+
+  const closeConfirmModal2 = () => {
+    setShowConfirmModal2(false);
+  };
+
+  
 
   if (loading) {
     return (
@@ -57,8 +166,16 @@ const GeometricEvent = () => {
             
             {/* Circular element */}
             <div className="transition-transform transform flex justify-center items-center w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto shadow-2xl hover:scale-110">
-              <button className="text-blue-200 font-semibold py-2 px-4 md:py-3 md:px-8 rounded-full transition-colors">
+              <button className="text-blue-200 font-semibold py-2 px-4 md:py-3 md:px-8 rounded-full transition-colors"
+                onClick={openConfirmModal}>
                   Book Now
+              </button>
+            </div>
+
+            <div className="transition-transform transform flex justify-center items-center w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto shadow-2xl hover:scale-110">
+              <button className="text-blue-200 font-semibold py-2 px-4 md:py-3 md:px-8 rounded-full transition-colors"
+                onClick={openConfirmModal2}>
+                  Get tickets
               </button>
             </div>
           </div>
@@ -100,6 +217,57 @@ const GeometricEvent = () => {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-gradient-to-r from-[#353535] to-[#181717] text-white p-8 rounded-lg shadow-lg space-y-4">
+            <h2 className="text-lg font-semibold">choose the no seats</h2>
+            <input type='number' 
+            className="w-full p-2 rounded-md text-black" 
+            placeholder={seats} min={1} 
+            onChange={(e) => {setSeats(e.target.value);}}
+            value={seats}/>
+            <div className="flex justify-end space-x-4">
+              <button onClick={closeConfirmModal} className="bg-white text-black px-4 py-2 rounded-md hover:bg-gray-300">Cancel</button>
+              <button onClick={Bookseats} className="bg-white text-black px-4 py-2 rounded-md hover:bg-blue-400">Book now</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    {showConfirmModal2 && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div className="relative bg-gradient-to-r from-[#353535] to-[#181717] text-white p-8 rounded-lg shadow-lg w-1/3 max-w-80">
+          {/* Close button */}
+          <button
+            className="absolute top-4 right-4 text-white text-2xl font-bold"
+            onClick={closeConfirmModal2}
+          >
+            &times;
+          </button>
+
+          <h2 className="text-3xl font-semibold text-center mb-6">Your Tickets</h2>
+
+          {/* AliceCarousel for ticket slider */}
+          <AliceCarousel
+            mouseTracking
+            items={items}
+            responsive={{
+              0: { items: 1 },
+              568: { items: 1 },
+              1024: { items: 1 },
+            }}
+            controlsStrategy="responsive"
+            disableDotsControls={false}  // You can hide dots if you don't want them
+            disableButtonsControls={false}  // You can hide next/prev buttons if you don't want them
+            autoPlay={false}  // You can set this to true if you want auto play
+            infinite={false}  // Set to true if you want infinite scrolling
+          />
+        </div>
+      </div>
+    )}
+
     </div>
   );
 };
