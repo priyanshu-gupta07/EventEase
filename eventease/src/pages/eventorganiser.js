@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getEventById, deleteEventById } from '../api/event/event'; // Add delete event API
+import { getEventById, deleteEventById } from '../api/event/event';
 import { Doughnut } from 'react-chartjs-2';
+import io from 'socket.io-client';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
-
+const socket = io('http://localhost:3001');
 const GeometricEvent = () => {
   const { id } = useParams();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showConfirmModal, setShowConfirmModal] = useState(false); // Add state for confirmation modal
+  const [showConfirmModal, setShowConfirmModal] = useState(false); 
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,6 +29,21 @@ const GeometricEvent = () => {
         }, 1000);
       });
   }, [id]);
+
+  useEffect(() => {
+    socket.on('seatsUpdated', (data) => {
+        if (data.id === event.id) {
+            setEvent((prevEvent) => ({
+                ...prevEvent,
+                bookedSeats: data.totalBookedSeats 
+            }));
+        }
+    });
+
+    return () => {
+        socket.off('seatsUpdated');
+    };
+}, [event]);
 
   const handleDelete = () => {
     deleteEventById(id)

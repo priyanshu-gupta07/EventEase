@@ -40,10 +40,11 @@ const Sidebar = () => {
   };
  let link;
   const user=localStorage.getItem('user');
-  if(!user){
+  const Userobject=JSON.parse(user)
+  if(!Userobject){
     link="/login"
   } else{
-    if(user.role==='user'){
+    if(Userobject.role ==='user'){
       link="/user"
     }
     else{
@@ -79,7 +80,7 @@ const Sidebar = () => {
         <nav className="flex-grow px-2 py-4">
           <SidebarLink
             href={link}
-            icon={Calendar}
+            icon={Users}
             label="Acount"
             isCollapsed={isSidebarCollapsed}
           />
@@ -90,15 +91,9 @@ const Sidebar = () => {
             isCollapsed={isSidebarCollapsed}
           />
           <SidebarLink
-            href="/attendees"
-            icon={Users}
-            label="Attendees"
-            isCollapsed={isSidebarCollapsed}
-          />
-          <SidebarLink
             href="/tickets"
             icon={Ticket}
-            label="Tickets"
+            label="Bookings"
             isCollapsed={isSidebarCollapsed}
           />
           <SidebarLink

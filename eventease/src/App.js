@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './MainLayout';
 import Login from './pages/loginpage';
-import User from './pages/user';
+import Tickets from './pages/tickets';
 import Event from './pages/Event';
 import EventForm from './pages/createEvent';
 import Organiser from './pages/organiser';
@@ -10,6 +10,7 @@ import SingleEvent from './pages/singleEvent';
 import OrganiserEvent from './pages/eventorganiser';
 import UpdateEventForm from './pages/updateEvent';
 import IntroPage from './pages/Intropage';
+import User from './pages/user';
 
 function App() {
   const [hasSeenIntro, setHasSeenIntro] = useState(() => {
@@ -33,6 +34,7 @@ function App() {
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Event />} />
             <Route path="/user" element={<User />} />
+            <Route path="/tickets" element={<Tickets />} />
             <Route path="/organiser" element={<Organiser />} />
             <Route path="/event" element={<Event />} />
             <Route path="/login" element={<Login />} />

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { getEventById,updateEventseats } from '../api/event/event';
 import io from 'socket.io-client';
-import { createbooking } from '../api/Bookings/booking';
+import { createbooking,getBookings } from '../api/Bookings/booking';
 import AliceCarousel from 'react-alice-carousel';
 import 'react-alice-carousel/lib/alice-carousel.css';
 
@@ -15,36 +15,54 @@ const GeometricEvent = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showConfirmModal2, setShowConfirmModal2] = useState(false);
   const [seats, setSeats] = useState(1);
+  const [tickets, setTickets] = useState([]);
 
   const user=localStorage.getItem('user');
   const Userobject = JSON.parse(user);
 
+  const navigate= useNavigate();
+
   const handleDragStart = (e) => e.preventDefault();
 
+  useEffect(() => {
+    if(user)
+    {
+      getBookings(Userobject.email,id)
+      .then(response => {
+        setTickets(response.data);
+        setTimeout(() => {
+          setLoading(false);;
+         },1000) 
+      })
+      .catch(error => {
+        console.error('Error fetching event:', error);
+       setTimeout(() => {
+        setLoading(false);
+       }, 1000);
+      });
+    }
+  }, [id,tickets]);
 
-  const userTickets = [
-    { id: 1, eventName: 'Concert 1', date: '2024-09-30', seatNumber: 'A12' },
-    { id: 2, eventName: 'Concert 2', date: '2024-10-02', seatNumber: 'B15' },
-    { id: 3, eventName: 'Concert 3', date: '2024-10-15', seatNumber: 'C10' },
-    { id: 3, eventName: 'Concert 3', date: '2024-10-15', seatNumber: 'C10' },
-    { id: 3, eventName: 'Concert 3', date: '2024-10-15', seatNumber: 'C10' },
-    { id: 3, eventName: 'Concert 3', date: '2024-10-15', seatNumber: 'C10' },
-  ];
-
-  const items = userTickets.map((ticket, index) => (
+  const items = tickets.map((ticket, index) => (
     <div
-      key={index}
-      className="bg-gray-800 p-6 rounded-lg shadow-md text-center min-h-[200px]"
+      key={ticket._id}
+      className="bg-white p-6 rounded-lg shadow-md text-center min-h-[200px] border border-gray-300"
       onDragStart={handleDragStart}
       role="presentation"
     >
-      <p className="text-lg font-bold">Ticket #{ticket.id}</p>
-      <p className="text-sm mt-2">Event: {ticket.eventName}</p>
-      <p className="text-sm">Date: {ticket.date}</p>
-      <p className="text-sm">Seat: {ticket.seatNumber}</p>
+      <p className="text-lg font-bold text-gray-800">Ticket #{index + 1}</p>
+      <p className="text-sm mt-2 text-gray-600">Event: {ticket.event_name}</p> {/* Event Name */}
+      <p className="text-sm text-gray-600">Username: {ticket.username}</p> {/* Username */}
+      <p className="text-sm text-gray-600">Booking Date: {new Date(ticket.booking_date).toLocaleDateString()}</p> {/* Format date */}
+      <p className="text-sm text-gray-600">Event Date: {new Date(ticket.event_date).toLocaleDateString()}</p> {/* Event Date */}
+      <p className="text-sm text-gray-600">Amount Paid: ${ticket.Amount_paid}</p> {/* Amount Paid */}
+      <p className="text-sm text-gray-600">Booking Status: {ticket.booking_status}</p> {/* Booking status */}
+      <p className="text-sm text-gray-600">Seats: {ticket.seat_no.join(', ')}</p> {/* Render seat numbers array */}
+      <p className="text-sm text-gray-600">Total Seats: {ticket.count}</p> {/* Total Seats */}
     </div>
   ));
-
+  
+  
   useEffect(() => {
     getEventById(id)
       .then(response => {
@@ -110,11 +128,11 @@ const GeometricEvent = () => {
     }
   };
 
-  const showtickets = async () => {
-    console.log("here");
-  }
-
   const openConfirmModal = () => {
+    if(!user){
+      alert("Please login to book the event");
+      navigate('/login');
+    }
     setShowConfirmModal(true);
   };
 
@@ -123,6 +141,10 @@ const GeometricEvent = () => {
   };
 
   const openConfirmModal2 = () => {
+    if(!user){
+      alert("Please login to book the event");
+      navigate('/login');
+    }
     setShowConfirmModal2(true);
   };
 
