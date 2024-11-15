@@ -96,7 +96,7 @@ const UpdateEventForm = () => {
     }
 
     try {
-      const response = await axios.put(`http://localhost:3001/${id}`, data, {
+      const response = await axios.put(`${EVENT_SERVICE_URL}/${id}`, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       console.log('Event updated:', response.data);

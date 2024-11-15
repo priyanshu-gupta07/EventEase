@@ -6,7 +6,7 @@ import io from 'socket.io-client';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
-const socket = io('http://localhost:3001');
+const socket = io(EVENT_SERVICE_URL);
 const GeometricEvent = () => {
   const { id } = useParams();
   const [event, setEvent] = useState(null);

@@ -47,7 +47,7 @@ const EventForm = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:3001', data, {
+      const response = await axios.post(EVENT_SERVICE_URL, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       console.log(response)
