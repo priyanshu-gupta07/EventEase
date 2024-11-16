@@ -1,8 +1,10 @@
 import axios from 'axios';
 
+const URL=process.env.REACT_APP_GATEWAY_SERVICE_URL;
+console.log(URL);
 // Create a reusable Axios instance
 const axiosInstance = axios.create({
-  baseURL: GATEWAY_SERVICE_URL, // Replace with your API base URL
+  baseURL: URL, // Replace with your API base URL
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

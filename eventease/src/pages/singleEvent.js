@@ -6,7 +6,7 @@ import { createbooking,getBookings } from '../api/Bookings/booking';
 import AliceCarousel from 'react-alice-carousel';
 import 'react-alice-carousel/lib/alice-carousel.css';
 
-const socket = io(EVENT_SERVICE_URL);
+const socket = io(process.env.REACT_APP_EVENT_SERVICE_URL);
 
 const GeometricEvent = () => {
   const { id } = useParams();

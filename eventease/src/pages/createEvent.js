@@ -47,7 +47,7 @@ const EventForm = () => {
     }
 
     try {
-      const response = await axios.post(EVENT_SERVICE_URL, data, {
+      const response = await axios.post(process.env.REACT_APP_EVENT_SERVICE_URL, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       console.log(response)
